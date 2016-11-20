@@ -30,9 +30,13 @@
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <dirent.h>
+# include <semaphore.h>
+# include <stdatomic.h>
+# include <pthread.h>
 #endif
 
 #include "enum_err.h"
+#include "enum_ringbuf.h"
 
 #ifdef EDP_WINDOWS
 # define EDP_API __declspec(dllexport)

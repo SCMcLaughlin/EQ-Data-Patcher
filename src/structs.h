@@ -53,4 +53,47 @@ typedef struct Pfs {
     SimpleString*   path;
 } Pfs;
 
+/* Synchronization */
+
+typedef struct Semaphore {
+#ifdef EDP_WINDOWS
+    HANDLE  handle;
+#else
+    sem_t   semaphore;
+#endif
+} Semaphore;
+
+#ifdef EDP_WINDOWS
+typedef LONG aint32_t;
+typedef SHORT aint16_t;
+typedef aint32_t amutex;
+#else
+typedef atomic_int aint32_t;
+typedef atomic_short aint16_t;
+typedef atomic_flag amutex;
+#endif
+
+#define RINGBUF_MAX_PACKETS 128
+
+typedef struct RingPacket {
+    uint32_t    opcode;
+    uint32_t    length;
+    void*       data;
+} RingPacket;
+
+typedef struct RingBlock {
+    int32_t     nextIndex;
+    aint16_t    hasBeenRead;
+    aint16_t    hasBeenWritten;
+    RingPacket  packet;
+} RingBlock;
+
+typedef struct RingBuf {
+    RingBlock   blocks[RINGBUF_MAX_PACKETS];
+    aint16_t    readStart;
+    aint16_t    readEnd;
+    aint16_t    writeStart;
+    aint16_t    writeEnd;
+} RingBuf;
+
 #endif/*STRUCTS_H*/

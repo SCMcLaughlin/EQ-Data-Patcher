@@ -1,6 +1,6 @@
 
 #include "define.h"
-#include "pfs.h"
+#include "bg_thread.h"
 #include <curl/curl.h>
 
 int main(void)
@@ -11,33 +11,13 @@ int main(void)
         return 1;
     }
     
-    printf("hello\n");
-    
-    Pfs pfs;
-    pfs_init(&pfs);
-    
-    if (!pfs_open(&pfs, "/media/samuel/Acer/EQTitaniumClean/gfaydark.s3d"))
+    if (bg_thread_start())
     {
-        SimpleBuffer* buf;
-        char name[] = "fayfloor.bmp";
-        
-        printf("opened successfully\n");
-        
-        buf = pfs_get(&pfs, name, sizeof(name) - 1);
-        
-        if (buf)
-        {
-            FILE* fp = fopen(name, "wb+");
-            printf("got buf\n");
-            
-            fwrite(buf_data(buf), sizeof(byte), buf_length(buf), fp);
-            fclose(fp);
-            
-            buf_destroy(buf);
-        }
+        printf("Failed to init background thread\n");
+        return 2;
     }
     
-    pfs_deinit(&pfs);
+    printf("hello\n");
     
     CURL* curl = curl_easy_init();
     
@@ -51,5 +31,8 @@ int main(void)
         printf("curl_easy_perform() returned %i\n", rc);
     }
     
+    bg_thread_stop();
     curl_global_cleanup();
+    
+    return 0;
 }

@@ -17,16 +17,21 @@ CDEF+= -DEQP_DEBUG -DDEBUG
 # eqp-server
 ##############################################################################
 _EDP_OBJECTS=           \
+ bg_thread              \
  bit                    \
  crc                    \
  edp_array              \
+ edp_atomic_posix       \
  edp_buffer             \
  edp_hash_tbl           \
+ edp_semaphore_posix    \
  edp_string             \
  err_code               \
  hash                   \
  main                   \
- pfs
+ pfs                    \
+ ringbuf                \
+ sqlite3
 
 EDP_OBJECTS= $(patsubst %,build/%.o,$(_EDP_OBJECTS))
 
@@ -34,7 +39,7 @@ EDP_OBJECTS= $(patsubst %,build/%.o,$(_EDP_OBJECTS))
 # Core Linker flags
 ##############################################################################
 LFLAGS= -rdynamic
-LDYNAMIC= -pthread -lrt -lsqlite3 -lz -lcurl
+LDYNAMIC= -pthread -lrt -lz -lcurl -ldl
 
 ##############################################################################
 # Util
@@ -52,17 +57,13 @@ default all: edp
 
 edp: bin/edp
 
-amalg: amalg-edp
-
-amalg-edp:
-	$(E) "Generating amalgamated source file"
-	$(Q)luajit amalg/amalg.lua "amalg/amalg-edp.c" $(_EDP_OBJECTS)
-	$(E) "Building amalg/amalg-edp.c"
-	$(Q)$(CC) -o bin/edp amalg/amalg-edp.c $(CDEF) $(COPT) $(CWARN) $(CWARNIGNORE) $(CFLAGS) $(CINCLUDE) $(LDYNAMIC) $(LFLAGS)
-
 bin/edp: $(EDP_OBJECTS)
 	$(E) "Linking $@"
 	$(Q)$(CC) -o $@ $^ $(LDYNAMIC) $(LFLAGS)
+    
+build/sqlite3.o: src/sqlite3.c $($(CC) -M src/sqlite3.c)
+	$(E) "\033[0;32mCC     $@\033[0m"
+	$(Q)$(CC) -c -o $@ $< $(CDEF) $(COPT) -fno-fast-math $(CWARN) $(CWARNIGNORE) $(CFLAGS) $(CINCLUDE)
 
 build/%.o: src/%.c $($(CC) -M src/%.c)
 	$(E) "\033[0;32mCC     $@\033[0m"
