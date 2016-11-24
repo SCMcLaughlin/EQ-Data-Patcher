@@ -129,4 +129,31 @@ typedef struct ManifestEntry {
     HashTbl         content;
 } ManifestEntry;
 
+/* Binary patch file sets */
+
+typedef struct BinHeader {
+    char        magic[4];
+    uint32_t    numFiles;
+} BinHeader;
+
+typedef struct BinSubHeader {
+    uint32_t    nameLength;
+    uint32_t    nameOffset;
+    uint32_t    dataLength;
+    uint32_t    dataOffset;
+} BinSubHeader;
+
+typedef struct BinReader {
+    Array   files;
+    HashTbl byName;
+    String  src;
+} BinReader;
+
+typedef struct BinReaderFile {
+    uint32_t    length;
+    uint32_t    nameLength;
+    byte*       data;
+    const char* name;
+} BinReaderFile;
+
 #endif/*STRUCTS_H*/

@@ -3,6 +3,7 @@
 #include "bg_thread.h"
 #include "parse.h"
 #include "patch.h"
+#include "bin.h"
 #include <curl/curl.h>
 
 static void tbl_two(HashTblEnt* ent)
@@ -11,14 +12,6 @@ static void tbl_two(HashTblEnt* ent)
     printf("%s = %s\n", sstr_data(ent->keyStr), str_data(val));
 }
 
-/*
-static void tbl_one(HashTblEnt* ent)
-{
-    HashTbl* val = (HashTbl*)ent->data;
-    printf("[%s]\n", sstr_data(ent->keyStr));
-    tbl_for_each_entry(val, tbl_two);
-}
-*/
 static void tbl_one(void* ptr)
 {
     ManifestEntry* val = (ManifestEntry*)ptr;
@@ -26,8 +19,13 @@ static void tbl_one(void* ptr)
     tbl_for_each_entry(&val->content, tbl_two);
 }
 
-int main(void)
+int main(int argc, const char** argv)
 {
+    if (argc > 1)
+    {
+        return bin_create(argc, argv);
+    }
+    
     if (curl_global_init(CURL_GLOBAL_DEFAULT))
     {
         printf("Failed to init libcurl\n");
@@ -43,8 +41,10 @@ int main(void)
     printf("hello\n");
     
     Array ar;
+    HashTbl byName;
     array_init(&ar, ManifestEntry);
-    int rc = patch_download_manifests(&ar);
+    tbl_init(&byName, uint32_t);
+    int rc = patch_download_manifests(&ar, &byName);
     
     if (rc)
     {
@@ -57,6 +57,7 @@ int main(void)
     }
     
     array_deinit(&ar, parse_deinit_each_patch_entry);
+    tbl_deinit(&byName, NULL);
     
     /*SimpleString* str = sstr_from_file("test.txt");
     

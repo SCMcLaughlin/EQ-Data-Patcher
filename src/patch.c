@@ -12,7 +12,27 @@ static size_t patch_write_manifest(char* str, size_t size, size_t count, void* u
     return bytes;
 }
 
-int patch_download_manifests(Array* patches)
+static int patch_set_by_names(Array* patches, HashTbl* byName)
+{
+    ManifestEntry* me;
+    uint32_t i = 0;
+    
+    while ( (me = array_get(patches, i, ManifestEntry)) )
+    {
+        SimpleString* str = me->name;
+        int rc;
+        
+        rc = tbl_set_str(byName, sstr_data(str), sstr_length(str), &i);
+        
+        i++;
+        
+        if (rc && rc != ERR_Again) return rc;
+    }
+    
+    return ERR_None;
+}
+
+int patch_download_manifests(Array* patches, HashTbl* byName)
 {
     String accum;
     CURL* curl  = curl_easy_init();
@@ -67,7 +87,6 @@ int patch_download_manifests(Array* patches)
             if (array_empty(patches))
             {
                 array_take_ownership(patches, parse_get_manifests(&parser));
-                printf("took ownership of %u patches\n", array_count(patches));
             }
             else
             {
@@ -79,6 +98,8 @@ int patch_download_manifests(Array* patches)
             parse_deinit(&parser);
         }
     }
+    
+    rc = patch_set_by_names(patches, byName);
     
 error:
     curl_easy_cleanup(curl);

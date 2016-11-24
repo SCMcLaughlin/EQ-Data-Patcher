@@ -8,6 +8,6 @@
 #include "parse.h"
 #include <curl/curl.h>
 
-int patch_download_manifests(Array* patches);
+int patch_download_manifests(Array* patches, HashTbl* byName);
 
 #endif/*PATCH_H*/

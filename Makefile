@@ -18,6 +18,7 @@ CDEF+= -DEQP_DEBUG -DDEBUG
 ##############################################################################
 _EDP_OBJECTS=           \
  bg_thread              \
+ bin                    \
  bit                    \
  crc                    \
  edp_array              \
