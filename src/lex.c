@@ -3,11 +3,11 @@
 
 static void lex_get(Lexer* lex, LexCursor* lc);
 
-void lex_init(Lexer* lex, SimpleString* str)
+void lex_init(Lexer* lex, const char* str, uint32_t len)
 {
     lex->pos    = 0;
-    lex->len    = sstr_length(str);
-    lex->src    = sstr_data(str);
+    lex->len    = len;
+    lex->src    = str;
     
     lex->cur.token  = Token_Start;
     lex->cur.ptr    = NULL;
@@ -17,18 +17,7 @@ void lex_init(Lexer* lex, SimpleString* str)
     lex->next.ptr   = NULL;
     lex->next.len   = 0;
     
-    lex->str = str;
-    
     lex_get(lex, &lex->next);
-}
-
-void lex_deinit(Lexer* lex)
-{
-    if (lex->str)
-    {
-        sstr_destroy(lex->str);
-        lex->str = NULL;
-    }
 }
 
 static void lex_read(Lexer* lex, LexCursor* lc)

@@ -16,7 +16,7 @@ static void parse_deinit_each_value(void* ptr)
     str_deinit(str);
 }
 
-static void parse_deinit_each_entry(void* ptr)
+void parse_deinit_each_patch_entry(void* ptr)
 {
     ManifestEntry* me = (ManifestEntry*)ptr;
     
@@ -26,9 +26,8 @@ static void parse_deinit_each_entry(void* ptr)
 
 void parse_deinit(Parser* p)
 {
-    lex_deinit(&p->lex);
     str_deinit(&p->accum);
-    array_deinit(&p->content, parse_deinit_each_entry);
+    array_deinit(&p->content, parse_deinit_each_patch_entry);
 }
 
 static int parse_skip_until(Lexer* lex, int c)
@@ -219,12 +218,12 @@ finish:
     return ERR_None;
 }
 
-int parse_file(Parser* p, SimpleString* str)
+int parse_file(Parser* p, const char* str, uint32_t len)
 {
     Lexer* lex  = &p->lex;
     int rc      = ERR_None;
     
-    lex_init(&p->lex, str);
+    lex_init(&p->lex, str, len);
     
     for (;;)
     {
@@ -261,4 +260,9 @@ int parse_file(Parser* p, SimpleString* str)
     
 finish:
     return (rc == ERR_Done) ? ERR_None : rc;
+}
+
+Array* parse_get_manifests(Parser* p)
+{
+    return &p->content;
 }

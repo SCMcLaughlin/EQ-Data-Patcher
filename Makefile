@@ -31,6 +31,7 @@ _EDP_OBJECTS=           \
  lex                    \
  main                   \
  parse                  \
+ patch                  \
  pfs                    \
  ringbuf                \
  sqlite3

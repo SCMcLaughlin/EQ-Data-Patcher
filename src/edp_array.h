@@ -38,4 +38,7 @@ int array_sort(Array* ar, CmpCallback sorter);
 
 void array_for_each(Array* ar, ElemCallback func);
 
+void array_take_ownership(Array* ar, Array* from);
+int array_append_array(Array* ar, const Array* src);
+
 #endif/*EDP_ARRAY_H*/

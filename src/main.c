@@ -2,6 +2,7 @@
 #include "define.h"
 #include "bg_thread.h"
 #include "parse.h"
+#include "patch.h"
 #include <curl/curl.h>
 
 static void tbl_two(HashTblEnt* ent)
@@ -41,7 +42,23 @@ int main(void)
     
     printf("hello\n");
     
-    SimpleString* str = sstr_from_file("test.txt");
+    Array ar;
+    array_init(&ar, ManifestEntry);
+    int rc = patch_download_manifests(&ar);
+    
+    if (rc)
+    {
+        printf("download failed\n");
+    }
+    else
+    {
+        printf("download worked!\n");
+        array_for_each(&ar, tbl_one);
+    }
+    
+    array_deinit(&ar, parse_deinit_each_patch_entry);
+    
+    /*SimpleString* str = sstr_from_file("test.txt");
     
     Parser p;
     parse_init(&p);
@@ -70,7 +87,7 @@ int main(void)
         curl_easy_cleanup(curl);
         
         printf("curl_easy_perform() returned %i\n", rc);
-    }
+    }*/
     
     bg_thread_stop();
     curl_global_cleanup();

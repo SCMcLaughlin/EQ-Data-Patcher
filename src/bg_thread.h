@@ -5,6 +5,7 @@
 #include "define.h"
 #include "structs.h"
 #include "ringbuf.h"
+#include "parse.h"
 #include "edp_semaphore.h"
 
 int bg_thread_start(void);

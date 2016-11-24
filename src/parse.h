@@ -11,6 +11,9 @@
 void parse_init(Parser* p);
 void parse_deinit(Parser* p);
 
-int parse_file(Parser* p, SimpleString* str);
+void parse_deinit_each_patch_entry(void* ptr);
+int parse_file(Parser* p, const char* str, uint32_t len);
+
+Array* parse_get_manifests(Parser* p);
 
 #endif/*PARSE_H*/

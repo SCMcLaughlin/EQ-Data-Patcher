@@ -7,6 +7,7 @@ typedef struct BG {
 #else
     pthread_t   pthread;
 #endif
+    Array       patches;
     RingBuf*    input;
     RingBuf*    output;
     Semaphore   semaphore;
@@ -69,6 +70,8 @@ int bg_thread_start(void)
 {
     int rc;
     
+    array_init(&sBG.patches, ManifestEntry);
+    
     sBG.input   = ringbuf_create();
     sBG.output  = ringbuf_create();
     
@@ -100,6 +103,7 @@ void bg_thread_stop(void)
     pthread_join(sBG.pthread, NULL);
 #endif
     
+    array_deinit(&sBG.patches, parse_deinit_each_patch_entry);
     ringbuf_destroy(sBG.input);
     ringbuf_destroy(sBG.output);
     semaphore_deinit(&sBG.semaphore);

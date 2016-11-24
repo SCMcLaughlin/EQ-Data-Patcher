@@ -112,7 +112,6 @@ typedef struct Lexer {
     const char*     src;
     LexCursor       cur;
     LexCursor       next;
-    SimpleString*   str;
 } Lexer;
 
 typedef struct Parser {
@@ -122,7 +121,6 @@ typedef struct Parser {
     const char* key;
     uint32_t    len;
     HashTbl*    curTbl;
-    //HashTbl     content;
     Array       content;
 } Parser;
 

@@ -7,8 +7,7 @@
 #include "container.h"
 #include "enum_lex.h"
 
-void lex_init(Lexer* lex, SimpleString* str);
-void lex_deinit(Lexer* lex);
+void lex_init(Lexer* lex, const char* str, uint32_t len);
 
 int lex_adv(Lexer* lex);
 int lex_peek(Lexer* lex);

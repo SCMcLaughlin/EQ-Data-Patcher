@@ -262,4 +262,31 @@ void array_for_each(Array* ar, ElemCallback func)
     }
 }
 
+void array_take_ownership(Array* ar, Array* from)
+{
+    memcpy(ar, from, sizeof(Array));
+    
+    from->count     = 0;
+    from->capacity  = 0;
+    from->data      = NULL;
+}
+
+int array_append_array(Array* ar, const Array* src)
+{
+    uint32_t elemSize   = ar->elemSize;
+    uint32_t ac         = ar->count;
+    uint32_t sc         = src->count;
+    int rc;
+    
+    if (elemSize != src->elemSize) return ERR_Invalid;
+    
+    rc = array_reserve(ar, ac + sc);
+    
+    if (rc) return rc;
+    
+    memcpy(&ar->data[ac * elemSize], src->data, sc * elemSize);
+    
+    return ERR_None;
+}
+
 #undef MIN_CAPACITY
