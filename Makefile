@@ -28,7 +28,9 @@ _EDP_OBJECTS=           \
  edp_string             \
  err_code               \
  hash                   \
+ lex                    \
  main                   \
+ parse                  \
  pfs                    \
  ringbuf                \
  sqlite3

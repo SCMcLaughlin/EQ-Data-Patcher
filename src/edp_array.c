@@ -247,4 +247,19 @@ int array_sort(Array* ar, CmpCallback sorter)
     return ERR_None;
 }
 
+void array_for_each(Array* ar, ElemCallback func)
+{
+    uint32_t elemSize   = ar->elemSize;
+    uint32_t i          = 0;
+    
+    for (;;)
+    {
+        if (i >= ar->count)
+            return;
+        
+        func(&ar->data[i * elemSize]);
+        i++;
+    }
+}
+
 #undef MIN_CAPACITY

@@ -1,7 +1,29 @@
 
 #include "define.h"
 #include "bg_thread.h"
+#include "parse.h"
 #include <curl/curl.h>
+
+static void tbl_two(HashTblEnt* ent)
+{
+    String* val = (String*)ent->data;
+    printf("%s = %s\n", sstr_data(ent->keyStr), str_data(val));
+}
+
+/*
+static void tbl_one(HashTblEnt* ent)
+{
+    HashTbl* val = (HashTbl*)ent->data;
+    printf("[%s]\n", sstr_data(ent->keyStr));
+    tbl_for_each_entry(val, tbl_two);
+}
+*/
+static void tbl_one(void* ptr)
+{
+    ManifestEntry* val = (ManifestEntry*)ptr;
+    printf("[%s]\n", sstr_data(val->name));
+    tbl_for_each_entry(&val->content, tbl_two);
+}
 
 int main(void)
 {
@@ -18,6 +40,25 @@ int main(void)
     }
     
     printf("hello\n");
+    
+    SimpleString* str = sstr_from_file("test.txt");
+    
+    Parser p;
+    parse_init(&p);
+    
+    int rc = parse_file(&p, str);
+    
+    if (rc)
+    {
+        printf("parse failed: %i\n", rc);
+    }
+    else
+    {
+        printf("parse worked!\n");
+        array_for_each(&p.content, tbl_one);
+    }
+    
+    parse_deinit(&p);
     
     CURL* curl = curl_easy_init();
     

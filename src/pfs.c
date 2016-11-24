@@ -549,7 +549,7 @@ int pfs_save(Pfs* pfs)
     }
     
     /* Names entry */
-    fent.crc            = 0x61580AC9; /* Always this */
+    fent.crc            = 0x61580ac9; /* Always this */
     fent.offset         = p;
     fent.inflatedLen    = array_count(&nameBuf);
     

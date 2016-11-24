@@ -35,6 +35,8 @@ typedef struct HashTblEnt {
     byte        data[0];
 } HashTblEnt;
 
+typedef void(*HashEntryCallback)(HashTblEnt* ent);
+
 typedef struct HashTbl {
     uint32_t    capacity;
     uint32_t    elemSize;
@@ -95,5 +97,38 @@ typedef struct RingBuf {
     aint16_t    writeStart;
     aint16_t    writeEnd;
 } RingBuf;
+
+/* Parsing */
+
+typedef struct LexCursor {
+    int         token;
+    const char* ptr;
+    uint32_t    len;
+} LexCursor;
+
+typedef struct Lexer {
+    uint32_t        pos;
+    uint32_t        len;
+    const char*     src;
+    LexCursor       cur;
+    LexCursor       next;
+    SimpleString*   str;
+} Lexer;
+
+typedef struct Parser {
+    int         state;
+    Lexer       lex;
+    String      accum;
+    const char* key;
+    uint32_t    len;
+    HashTbl*    curTbl;
+    //HashTbl     content;
+    Array       content;
+} Parser;
+
+typedef struct ManifestEntry {
+    SimpleString*   name;
+    HashTbl         content;
+} ManifestEntry;
 
 #endif/*STRUCTS_H*/
