@@ -133,3 +133,10 @@ void ring_packet_init_value(RingPacket* p, int opcode, int64_t value)
     p->length   = 0;
     p->value    = value;
 }
+
+void ring_packet_init_op(RingPacket* p, int opcode)
+{
+    p->opcode   = opcode;
+    p->length   = 0;
+    p->value    = 0;
+}

@@ -32,13 +32,23 @@ static int patch_set_by_names(Array* patches, HashTbl* byName)
     return ERR_None;
 }
 
-int patch_download_manifests(Array* patches, HashTbl* byName)
+int patch_download_manifests(Array* patches, HashTbl* byName, sqlite3* db)
 {
     String accum;
+    sqlite3_stmt* stmt;
     CURL* curl  = curl_easy_init();
     int rc      = ERR_None;
+    int sqlrc;
     
     if (!curl) return ERR_CouldNotInit;
+    
+    stmt = db_prep_literal(db, "SELECT url FROM manifest_locations ORDER BY rowid");
+    
+    if (!stmt)
+    {
+        rc = ERR_SQL;
+        goto error_no_stmt;
+    }
     
     str_init(&accum);
     
@@ -56,9 +66,27 @@ int patch_download_manifests(Array* patches, HashTbl* byName)
     
     if (rc) goto setopt_err;
     
-    if (curl) /* make this into a loop condition */
+    for (;;)
     {
-        rc = curl_easy_setopt(curl, CURLOPT_URL, "https://dl.dropboxusercontent.com/u/70648819/downloads/test.txt");
+        const char* url;
+        
+        sqlrc = sqlite3_step(stmt);
+        
+        if (sqlrc == SQLITE_BUSY || sqlrc == SQLITE_LOCKED)
+            continue;
+        
+        if (sqlrc == SQLITE_DONE)
+            break;
+        
+        if (sqlrc != SQLITE_ROW)
+            goto sql_err;
+        
+        url = (const char*)sqlite3_column_text(stmt, 0);
+        
+        if (!url)
+            continue;
+        
+        rc = curl_easy_setopt(curl, CURLOPT_URL, url);
         
         if (rc) goto setopt_err;
         
@@ -102,7 +130,93 @@ int patch_download_manifests(Array* patches, HashTbl* byName)
     rc = patch_set_by_names(patches, byName);
     
 error:
+    sqlite3_finalize(stmt);
+    
+error_no_stmt:
     curl_easy_cleanup(curl);
     str_deinit(&accum);
     return rc;
+    
+sql_err:
+    printf("SQLite error (%i): '%s'\n", sqlrc, sqlite3_errstr(sqlrc));
+    goto error;
+}
+
+static int patch_download(Array* patches, HashTbl* byName, SimpleString* patchName, String* download)
+{
+    uint32_t* index = tbl_get_str(byName, sstr_data(patchName), sstr_length(patchName), uint32_t);
+    ManifestEntry* me;
+    String* url;
+    CURL* curl;
+    int rc;
+    
+    if (!index) return ERR_Invalid;
+    
+    me = array_get(patches, *index, ManifestEntry);
+    
+    if (!me) return ERR_OutOfBounds;
+    
+    url = tbl_get_str_literal(&me->content, "url", String);
+    
+    if (!url) return ERR_BadUrl;
+    
+    curl = curl_easy_init();
+    
+    if (!curl)
+    {
+    err:
+        return ERR_Generic;
+    }
+    
+    rc = (curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, patch_write_manifest)   ||
+          curl_easy_setopt(curl, CURLOPT_WRITEDATA, download)                   ||
+          curl_easy_setopt(curl, CURLOPT_URL, str_data(url))                    ||
+          curl_easy_perform(curl));
+    
+    curl_easy_cleanup(curl);
+    
+    if (rc) goto err;
+    
+    return ERR_None;
+}
+
+void patch_download_and_apply(Array* patches, HashTbl* byName, sqlite3* db, SimpleString* eqPath, RingBuf* output, SimpleString* patchName)
+{
+    RingPacket rp;
+    String download;
+    int rc;
+    
+    str_init(&download);
+    
+    /* Step 1: Download the binary patch file set */
+    rc = patch_download(patches, byName, patchName, &download);
+    
+    if (rc)
+    {
+        ring_packet_init_value(&rp, RingOp_PatchDownloadFailed, rc);
+        ringbuf_push(output, &rp);
+        goto abort;
+    }
+    
+    /* Step 2: Process the binary patch file set to see what's in it */
+    
+    /* Step 3: Find and process the manifest file to find out which local files we are changing */
+    
+    /*
+       Step 4: For each destination archive (s3d file):
+    
+        1) Open the pre-existing destination file.
+        2) Check if we already have an unmolested copy of this file in the db; if not, insert the file we just opened.
+    
+        For each file being inserted into the destination file:
+    
+            1) Check if the file being inserted will replace an existing file; if so, check if we have an unmolested copy of that file in the db; if not, insert it (in pfs compressed format).
+            2) Insert the new file.
+    
+        3) Save the changes to the file on disk.
+        4) Make a record of the applied patch's details in the db.
+    */
+    
+abort:
+    str_deinit(&download);
 }

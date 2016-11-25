@@ -18,5 +18,6 @@ int ringbuf_pop(RingBuf* rb, RingPacket* p);
 
 void ring_packet_init(RingPacket* p, int opcode, uint32_t len, void* data);
 void ring_packet_init_value(RingPacket* p, int opcode, int64_t value);
+void ring_packet_init_op(RingPacket* p, int opcode);
 
 #endif/*RINGBUF_H*/

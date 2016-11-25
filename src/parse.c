@@ -99,6 +99,8 @@ finish:
 
 static int parse_label(Parser* p, Lexer* lex)
 {
+    uint32_t i;
+    
     for (;;)
     {
         int tk = lex_adv(lex);
@@ -109,9 +111,13 @@ static int parse_label(Parser* p, Lexer* lex)
             return ERR_Done;
         
         case Token_String:
-            p->key      = lex_str(lex);
+            p->key      = (char*)lex_str(lex);
             p->len      = lex_len(lex);
             p->state    = Parse_Equals;
+        
+            for (i = 0; i < p->len; i++)
+                p->key[i] = tolower(p->key[i]);
+        
             return ERR_None;
             
         case '[':
@@ -194,7 +200,8 @@ static int parse_value(Parser* p, Lexer* lex)
             if (isspace(tk) && !readString)
                 break;
             
-            rc = str_append_char(&p->accum, tk);
+            rc          = str_append_char(&p->accum, tk);
+            readString  = true;
             
             if (rc) return rc;
             

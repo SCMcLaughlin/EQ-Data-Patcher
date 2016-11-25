@@ -19,5 +19,7 @@
 #define ERR_FileOperation   -11
 #define ERR_Compression     -12
 #define ERR_OutOfBounds     -13
+#define ERR_SQL             -14
+#define ERR_BadUrl          -15
 
 #endif/*ENUM_ERR_H*/

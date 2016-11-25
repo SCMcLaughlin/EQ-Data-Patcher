@@ -18,6 +18,7 @@ int tbl_set_int(HashTbl* tbl, int64_t key, const void* value);
 
 void* tbl_get_str_raw(HashTbl* tbl, const char* key, uint32_t len);
 #define tbl_get_str(tbl, key, len, type) (type*)tbl_get_str_raw((tbl), (key), (len))
+#define tbl_get_str_literal(tbl, key, type) tbl_get_str(tbl, key, sizeof(key) - 1, type)
 void* tbl_get_int_raw(HashTbl* tbl, int64_t key);
 #define tbl_get_int(tbl, key, type) (type*)tbl_get_int_raw((tbl), (key))
 #define tbl_get_ptr(tbl, ptr, type) tbl_get_int(tbl, (intptr_t)(ptr), type)

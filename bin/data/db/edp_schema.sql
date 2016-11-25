@@ -44,3 +44,11 @@ CREATE TABLE replaced_files (
 CREATE TABLE manifest_locations (
     url TEXT PRIMARY KEY
 );
+
+
+BEGIN;
+
+INSERT INTO manifest_locations (url) VALUES
+ ('https://dl.dropboxusercontent.com/u/70648819/downloads/test.txt');
+
+COMMIT;

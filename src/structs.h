@@ -121,7 +121,7 @@ typedef struct Parser {
     int         state;
     Lexer       lex;
     String      accum;
-    const char* key;
+    char*       key;
     uint32_t    len;
     HashTbl*    curTbl;
     Array       content;

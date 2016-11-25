@@ -24,11 +24,12 @@ int bin_create(int argc, const char** argv)
     Array subHeaders;
     Array names;
     Array files;
-    uint32_t noff = 0;
-    uint32_t doff = 0;
+    uint32_t noff   = 0;
+    uint32_t doff   = 0;
+    int hadManifest = false;
+    int rc          = ERR_None;
     BinSubHeader* shead;
     FILE* fp;
-    int rc = ERR_None;
     int i;
     
     array_init(&subHeaders, BinSubHeader);
@@ -49,10 +50,13 @@ int bin_create(int argc, const char** argv)
             continue;
         }
         
-        subhead.nameLength  = namelen;
-        subhead.nameOffset  = noff;
-        subhead.dataLength  = sstr_length(data);
-        subhead.dataOffset  = doff;
+        if (!hadManifest && strncmp(name, "manifest.", sizeof("manifest.") - 1) == 0)
+            hadManifest = true;
+        
+        subhead.nameLength = namelen;
+        subhead.nameOffset = noff;
+        subhead.dataLength = sstr_length(data);
+        subhead.dataOffset = doff;
         
         noff += namelen + 1;
         doff += sstr_length(data);
@@ -65,6 +69,19 @@ int bin_create(int argc, const char** argv)
         
         if (array_append(&files, sstr_data(data), sstr_length(data)))
             goto oom;
+        
+        sstr_destroy(data);
+        continue;
+        
+    oom:
+        sstr_destroy(data);
+        goto oom_err;
+    }
+    
+    if (!hadManifest)
+    {
+        printf("Error: patches must contain a file called \"manifest\" (e.g. \"manifest.txt\") to define how the patch should be applied.\nNo such file was found in the provided input.\n");
+        goto deinit;
     }
     
     /* Correct offsets to be relative to the start of the whole blob */
@@ -111,7 +128,7 @@ int bin_create(int argc, const char** argv)
     
     for (i = 1; i < argc; i++)
     {
-        printf("\t%s\n", bin_filename(argv[i]));
+        printf("    %s\n", bin_filename(argv[i]));
     }
     
     printf("\nYou should rename this file before uploading it somewhere.\n");
@@ -121,9 +138,14 @@ deinit:
     array_deinit(&names, NULL);
     array_deinit(&files, NULL);
     
+    /* For windows: keep the console window open so the user can see the output message */
+#ifdef EDP_WINDOWS
+    getchar();
+#endif
+    
     return rc;
     
-oom:
+oom_err:
     printf("Error: ran out of memory\n");
     rc = ERR_OutOfMemory;
     goto deinit;

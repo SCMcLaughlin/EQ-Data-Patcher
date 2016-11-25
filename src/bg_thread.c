@@ -2,20 +2,84 @@
 #include "bg_thread.h"
 
 typedef struct BG {
-    sqlite3*    db;
-    Array       patches;
-    HashTbl     patchesByName;
-    RingBuf*    input;
-    RingBuf*    output;
-    Semaphore   semaphore;
+    sqlite3*        db;
+    Array           patches;
+    HashTbl         patchesByName;
+    SimpleString*   eqPath;
+    RingBuf*        input;
+    RingBuf*        output;
+    Semaphore       semaphore;
 #ifdef EDP_WINDOWS
-    HANDLE      hThread;
+    HANDLE          hThread;
 #else
-    pthread_t   pthread;
+    pthread_t       pthread;
 #endif
 } BG;
 
 static BG sBG;
+
+static void bg_thread_init_db(void)
+{
+    int rc;
+    sqlite3_stmt* stmt;
+    RingPacket rp;
+    
+    rc = db_init(&sBG.db);
+    
+    if (rc)
+    {
+    open_err:
+        ring_packet_init_value(&rp, RingOp_CouldNotOpenDB, rc);
+        ringbuf_push(sBG.output, &rp);
+        return;
+    }
+    
+    stmt = db_prep_literal(sBG.db, "SELECT value FROM info WHERE key = 'eqpath'");
+    
+    if (!stmt) goto open_err;
+    
+    for (;;)
+    {
+        const char* str;
+        uint32_t len;
+        
+        rc = sqlite3_step(stmt);
+        
+        if (rc == SQLITE_BUSY || rc == SQLITE_LOCKED)
+            continue;
+        
+        if (rc == SQLITE_DONE)
+            break;
+        
+        if (rc != SQLITE_ROW)
+            goto stmt_err;
+        
+        len = sqlite3_column_bytes(stmt, 0);
+        str = (const char*)sqlite3_column_text(stmt, 0);
+        
+        if (str && len)
+        {
+            sBG.eqPath = sstr_create(str, len);
+            
+            if (!sBG.eqPath)
+                goto stmt_err;
+        }
+    }
+    
+    sqlite3_finalize(stmt);
+    
+    if (!sBG.eqPath)
+    {
+        ring_packet_init_op(&rp, RingOp_NeedEqPath);
+        ringbuf_push(sBG.output, &rp);
+    }
+    
+    return;
+    
+stmt_err:
+    sqlite3_finalize(stmt);
+    goto open_err;
+}
 
 #ifdef EDP_WINDOWS
 static DWORD WINAPI
@@ -24,19 +88,9 @@ static void*
 #endif
 bg_thread_proc(void* unused)
 {
-    int rc;
-    
     (void)unused;
     
-    rc = db_init(&sBG.db);
-    printf("db_init: %i\n", rc);
-    
-    if (rc)
-    {
-        RingPacket rp;
-        ring_packet_init_value(&rp, RingOp_CouldNotOpenDB, rc);
-        ringbuf_push(sBG.output, &rp);
-    }
+    bg_thread_init_db();
     
     for (;;)
     {
@@ -118,7 +172,18 @@ void bg_thread_stop(void)
     pthread_join(sBG.pthread, NULL);
 #endif
     
-    db_deinit(sBG.db);
+    if (sBG.db)
+    {
+        db_deinit(sBG.db);
+        sBG.db = NULL;
+    }
+    
+    if (sBG.eqPath)
+    {
+        sstr_destroy(sBG.eqPath);
+        sBG.eqPath = NULL;
+    }
+    
     array_deinit(&sBG.patches, parse_deinit_each_patch_entry);
     tbl_deinit(&sBG.patchesByName, NULL);
 

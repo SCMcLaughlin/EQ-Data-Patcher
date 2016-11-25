@@ -7,6 +7,8 @@ enum RingBufOp
     RingOp_None,
     RingOp_Terminate,
     RingOp_CouldNotOpenDB,
+    RingOp_NeedEqPath,
+    RingOp_PatchDownloadFailed,
     RingOp_COUNT
 };
 

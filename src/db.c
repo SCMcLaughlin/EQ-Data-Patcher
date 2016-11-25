@@ -51,3 +51,22 @@ int db_exec(sqlite3* db, const char* sql)
     int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
     return (rc == SQLITE_OK) ? ERR_None : ERR_Invalid;
 }
+
+sqlite3_stmt* db_prep(sqlite3* db, const char* sql, int len)
+{
+    sqlite3_stmt* stmt = NULL;
+    int rc;
+    
+    do
+    {
+        rc = sqlite3_prepare_v2(db, sql, len, &stmt, NULL);
+    }
+    while (rc == SQLITE_BUSY || rc == SQLITE_LOCKED);
+    
+    if (rc != SQLITE_OK)
+    {
+        printf("Error: [db_prep] Prepared statement creation failed, SQLite error (%i): '%s'", rc, sqlite3_errstr(rc));
+    }
+    
+    return stmt;
+}
