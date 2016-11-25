@@ -4,15 +4,17 @@
 const char* bin_filename(const char* str)
 {
     const char* ret = str;
-    uint32_t n      = strlen(str);
-    uint32_t i;
+    uint32_t i      = 0;
     
-    for (i = 0; i < n; i++)
+    for (;;)
     {
-        int c = str[i];
+        int c = str[i++];
+        
+        if (c == 0)
+            break;
         
         if (c == '/' || c == '\\')
-            ret = str + i + 1;
+            ret = str + i;
     }
     
     return ret;
@@ -124,14 +126,17 @@ int bin_create(int argc, const char** argv)
     
     fclose(fp);
     
-    printf("Successfully created 'edp_patch.edp' with the following contents:\n\n");
-    
-    for (i = 1; i < argc; i++)
+    if (!rc)
     {
-        printf("    %s\n", bin_filename(argv[i]));
+        printf("Successfully created 'edp_patch.edp' with the following contents:\n\n");
+        
+        for (i = 1; i < argc; i++)
+        {
+            printf("    %s\n", bin_filename(argv[i]));
+        }
+        
+        printf("\nYou should rename this file before uploading it somewhere.\n");
     }
-    
-    printf("\nYou should rename this file before uploading it somewhere.\n");
     
 deinit:
     array_deinit(&subHeaders, NULL);
