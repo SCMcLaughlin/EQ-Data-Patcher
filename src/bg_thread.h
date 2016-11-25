@@ -6,6 +6,7 @@
 #include "structs.h"
 #include "ringbuf.h"
 #include "edp_semaphore.h"
+#include "db.h"
 
 int bg_thread_start(void);
 void bg_thread_stop(void);

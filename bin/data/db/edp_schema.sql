@@ -2,6 +2,11 @@
 -- Increase page size to speed up blob I/O
 PRAGMA page_size = 8192;
 
+CREATE TABLE info (
+    key     TEXT PRIMARY KEY,
+    value
+);
+
 CREATE TABLE blobs (
     id      INTEGER PRIMARY KEY,
     data    BLOB

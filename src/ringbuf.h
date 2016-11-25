@@ -17,5 +17,6 @@ int ringbuf_push(RingBuf* rb, const RingPacket* p);
 int ringbuf_pop(RingBuf* rb, RingPacket* p);
 
 void ring_packet_init(RingPacket* p, int opcode, uint32_t len, void* data);
+void ring_packet_init_value(RingPacket* p, int opcode, int64_t value);
 
 #endif/*RINGBUF_H*/

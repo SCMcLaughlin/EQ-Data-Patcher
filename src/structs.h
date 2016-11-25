@@ -78,7 +78,10 @@ typedef atomic_flag amutex;
 typedef struct RingPacket {
     uint32_t    opcode;
     uint32_t    length;
-    void*       data;
+    union {
+        void*   data;
+        int64_t value;
+    };
 } RingPacket;
 
 typedef struct RingBlock {

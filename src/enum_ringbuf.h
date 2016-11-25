@@ -6,6 +6,7 @@ enum RingBufOp
 {
     RingOp_None,
     RingOp_Terminate,
+    RingOp_CouldNotOpenDB,
     RingOp_COUNT
 };
 

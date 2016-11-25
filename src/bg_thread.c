@@ -2,14 +2,15 @@
 #include "bg_thread.h"
 
 typedef struct BG {
+    sqlite3*    db;
+    RingBuf*    input;
+    RingBuf*    output;
+    Semaphore   semaphore;
 #ifdef EDP_WINDOWS
     HANDLE      hThread;
 #else
     pthread_t   pthread;
 #endif
-    RingBuf*    input;
-    RingBuf*    output;
-    Semaphore   semaphore;
 } BG;
 
 static BG sBG;
@@ -21,7 +22,19 @@ static void*
 #endif
 bg_thread_proc(void* unused)
 {
+    int rc;
+    
     (void)unused;
+    
+    rc = db_init(&sBG.db);
+    printf("db_init: %i\n", rc);
+    
+    if (rc)
+    {
+        RingPacket rp;
+        ring_packet_init_value(&rp, RingOp_CouldNotOpenDB, rc);
+        ringbuf_push(sBG.output, &rp);
+    }
     
     for (;;)
     {
@@ -100,6 +113,7 @@ void bg_thread_stop(void)
     pthread_join(sBG.pthread, NULL);
 #endif
     
+    db_deinit(sBG.db);
     ringbuf_destroy(sBG.input);
     ringbuf_destroy(sBG.output);
     semaphore_deinit(&sBG.semaphore);

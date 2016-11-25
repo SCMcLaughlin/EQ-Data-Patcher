@@ -20,6 +20,7 @@ _EDP_OBJECTS=           \
  bg_thread              \
  bit                    \
  crc                    \
+ db                     \
  edp_array              \
  edp_atomic_posix       \
  edp_buffer             \
@@ -63,7 +64,7 @@ bin/edp: $(EDP_OBJECTS)
     
 build/sqlite3.o: src/sqlite3.c $($(CC) -M src/sqlite3.c)
 	$(E) "\033[0;32mCC     $@\033[0m"
-	$(Q)$(CC) -c -o $@ $< $(CDEF) $(COPT) -fno-fast-math $(CWARN) $(CWARNIGNORE) $(CFLAGS) $(CINCLUDE)
+	$(Q)$(CC) -c -o $@ $< $(CDEF) $(COPT) -fno-fast-math -DSQLITE_ENABLE_STAT4=1 $(CWARN) $(CWARNIGNORE) $(CFLAGS) $(CINCLUDE)
 
 build/%.o: src/%.c $($(CC) -M src/%.c)
 	$(E) "\033[0;32mCC     $@\033[0m"

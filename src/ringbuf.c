@@ -126,3 +126,10 @@ void ring_packet_init(RingPacket* p, int opcode, uint32_t len, void* data)
     p->length   = len;
     p->data     = data;
 }
+
+void ring_packet_init_value(RingPacket* p, int opcode, int64_t value)
+{
+    p->opcode   = opcode;
+    p->length   = 0;
+    p->value    = value;
+}
