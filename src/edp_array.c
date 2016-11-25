@@ -247,4 +247,46 @@ int array_sort(Array* ar, CmpCallback sorter)
     return ERR_None;
 }
 
+void array_for_each(Array* ar, ElemCallback func)
+{
+    uint32_t elemSize   = ar->elemSize;
+    uint32_t i          = 0;
+    
+    for (;;)
+    {
+        if (i >= ar->count)
+            return;
+        
+        func(&ar->data[i * elemSize]);
+        i++;
+    }
+}
+
+void array_take_ownership(Array* ar, Array* from)
+{
+    memcpy(ar, from, sizeof(Array));
+    
+    from->count     = 0;
+    from->capacity  = 0;
+    from->data      = NULL;
+}
+
+int array_append_array(Array* ar, const Array* src)
+{
+    uint32_t elemSize   = ar->elemSize;
+    uint32_t ac         = ar->count;
+    uint32_t sc         = src->count;
+    int rc;
+    
+    if (elemSize != src->elemSize) return ERR_Invalid;
+    
+    rc = array_reserve(ar, ac + sc);
+    
+    if (rc) return rc;
+    
+    memcpy(&ar->data[ac * elemSize], src->data, sc * elemSize);
+    
+    return ERR_None;
+}
+
 #undef MIN_CAPACITY

@@ -3,6 +3,8 @@
 
 typedef struct BG {
     sqlite3*    db;
+    Array       patches;
+    HashTbl     patchesByName;
     RingBuf*    input;
     RingBuf*    output;
     Semaphore   semaphore;
@@ -82,6 +84,9 @@ int bg_thread_start(void)
 {
     int rc;
     
+    array_init(&sBG.patches, ManifestEntry);
+    tbl_init(&sBG.patchesByName, uint32_t);
+    
     sBG.input   = ringbuf_create();
     sBG.output  = ringbuf_create();
     
@@ -114,6 +119,9 @@ void bg_thread_stop(void)
 #endif
     
     db_deinit(sBG.db);
+    array_deinit(&sBG.patches, parse_deinit_each_patch_entry);
+    tbl_deinit(&sBG.patchesByName, NULL);
+
     ringbuf_destroy(sBG.input);
     ringbuf_destroy(sBG.output);
     semaphore_deinit(&sBG.semaphore);

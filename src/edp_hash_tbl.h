@@ -28,5 +28,6 @@ int tbl_remove_int(HashTbl* ptr, int64_t key);
 #define tbl_remove_ptr(tbl, ptr) tbl_remove_int((tbl), (intptr_t)(ptr))
 
 void tbl_for_each(HashTbl* tbl, ElemCallback func);
+void tbl_for_each_entry(HashTbl* tbl, HashEntryCallback func);
 
 #endif/*EDP_HASH_TBL_H*/

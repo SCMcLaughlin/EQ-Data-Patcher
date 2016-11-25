@@ -36,4 +36,9 @@ void array_clear_index_and_above(Array* ar, uint32_t index);
 int array_append(Array* ar, const void* values, uint32_t count);
 int array_sort(Array* ar, CmpCallback sorter);
 
+void array_for_each(Array* ar, ElemCallback func);
+
+void array_take_ownership(Array* ar, Array* from);
+int array_append_array(Array* ar, const Array* src);
+
 #endif/*EDP_ARRAY_H*/

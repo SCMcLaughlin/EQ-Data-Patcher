@@ -378,7 +378,7 @@ static void* tbl_get_impl(HashTbl* tbl, int64_t key, uint32_t len, uint32_t isIn
             }
             else
             {
-                if (sstr_length(ent->keyStr) == len && strcmp(sstr_data(ent->keyStr), (const char*)key) == 0)
+                if (sstr_length(ent->keyStr) == len && strncmp(sstr_data(ent->keyStr), (const char*)key, len) == 0)
                     return ent->data;
             }
         }
@@ -536,6 +536,24 @@ void tbl_for_each(HashTbl* tbl, ElemCallback func)
         
         if (!ent_is_empty(ent))
             func(ent->data);
+        
+        data += entSize;
+    }
+}
+
+void tbl_for_each_entry(HashTbl* tbl, HashEntryCallback func)
+{
+    uint32_t entSize    = tbl->entSize;
+    byte* data          = tbl->data;
+    uint32_t n          = tbl->capacity;
+    uint32_t i;
+    
+    for (i = 0; i < n; i++)
+    {
+        HashTblEnt* ent = (HashTblEnt*)data;
+        
+        if (!ent_is_empty(ent))
+            func(ent);
         
         data += entSize;
     }

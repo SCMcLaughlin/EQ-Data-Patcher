@@ -39,13 +39,14 @@ static uint32_t crc_table[] = {
 uint32_t crc_calc(const void* data, uint32_t len)
 {
     const byte* ptr = (const byte*)data;
-    uint32_t val = 0;
+    uint32_t val    = 0;
+    uint32_t idx;
     uint32_t i;
     
     for (i = 0; i < len; i++)
     {
-        uint32_t index = ((val >> 24) ^ ptr[i]) & 0xff;
-        val = (val << 8) ^ crc_table[index];
+        idx = ((val >> 24) ^ ptr[i]) & 0xff;
+        val = (val << 8) ^ crc_table[idx];
     }
     
     return val;

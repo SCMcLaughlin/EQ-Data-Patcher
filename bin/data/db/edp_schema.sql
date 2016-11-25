@@ -40,3 +40,7 @@ CREATE TABLE replaced_files (
     
     PRIMARY KEY (parent_archive_id, file_name)
 );
+
+CREATE TABLE manifest_locations (
+    url TEXT PRIMARY KEY
+);

@@ -35,6 +35,8 @@ typedef struct HashTblEnt {
     byte        data[0];
 } HashTblEnt;
 
+typedef void(*HashEntryCallback)(HashTblEnt* ent);
+
 typedef struct HashTbl {
     uint32_t    capacity;
     uint32_t    elemSize;
@@ -98,5 +100,63 @@ typedef struct RingBuf {
     aint16_t    writeStart;
     aint16_t    writeEnd;
 } RingBuf;
+
+/* Parsing */
+
+typedef struct LexCursor {
+    int         token;
+    const char* ptr;
+    uint32_t    len;
+} LexCursor;
+
+typedef struct Lexer {
+    uint32_t        pos;
+    uint32_t        len;
+    const char*     src;
+    LexCursor       cur;
+    LexCursor       next;
+} Lexer;
+
+typedef struct Parser {
+    int         state;
+    Lexer       lex;
+    String      accum;
+    const char* key;
+    uint32_t    len;
+    HashTbl*    curTbl;
+    Array       content;
+} Parser;
+
+typedef struct ManifestEntry {
+    SimpleString*   name;
+    HashTbl         content;
+} ManifestEntry;
+
+/* Binary patch file sets */
+
+typedef struct BinHeader {
+    char        magic[4];
+    uint32_t    numFiles;
+} BinHeader;
+
+typedef struct BinSubHeader {
+    uint32_t    nameLength;
+    uint32_t    nameOffset;
+    uint32_t    dataLength;
+    uint32_t    dataOffset;
+} BinSubHeader;
+
+typedef struct BinReader {
+    Array   files;
+    HashTbl byName;
+    String  src;
+} BinReader;
+
+typedef struct BinReaderFile {
+    uint32_t    length;
+    uint32_t    nameLength;
+    byte*       data;
+    const char* name;
+} BinReaderFile;
 
 #endif/*STRUCTS_H*/

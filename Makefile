@@ -18,6 +18,7 @@ CDEF+= -DEQP_DEBUG -DDEBUG
 ##############################################################################
 _EDP_OBJECTS=           \
  bg_thread              \
+ bin                    \
  bit                    \
  crc                    \
  db                     \
@@ -29,7 +30,10 @@ _EDP_OBJECTS=           \
  edp_string             \
  err_code               \
  hash                   \
+ lex                    \
  main                   \
+ parse                  \
+ patch                  \
  pfs                    \
  ringbuf                \
  sqlite3

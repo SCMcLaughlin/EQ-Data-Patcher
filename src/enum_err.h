@@ -4,6 +4,7 @@
 
 #define ERR_True            0
 #define ERR_False           1
+#define ERR_Done            1
 #define ERR_None            0
 #define ERR_Generic         -1
 #define ERR_CouldNotInit    -2
